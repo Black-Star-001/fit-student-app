@@ -1,32 +1,47 @@
+import 'package:flutter/foundation.dart'; // <--- CORREÇÃO: Import necessário para debugPrint
 import '../../domain/entities/study_session.dart';
 import '../../domain/repositories/study_repository.dart';
 import '../mappers/study_session_mapper.dart';
+import '../local/study_local_datasource.dart';
 import '../remote/study_remote_datasource.dart';
 
 class StudyRepositoryImpl implements StudyRepository {
   final StudyRemoteDataSource remoteDataSource;
+  final StudyLocalDataSource localDataSource;
 
-  StudyRepositoryImpl(this.remoteDataSource);
+  StudyRepositoryImpl(this.remoteDataSource, this.localDataSource);
 
   @override
   Future<void> saveSession(StudySession session) async {
     final dto = StudySessionMapper.toDto(session);
+    
     await remoteDataSource.createSession(dto);
+    
+    final updatedList = await remoteDataSource.getHistory();
+    await localDataSource.cacheHistory(updatedList);
   }
 
   @override
   Future<List<StudySession>> getSessionHistory() async {
-    final dtos = await remoteDataSource.getHistory();
-    return dtos.map((dto) => StudySessionMapper.toEntity(dto)).toList();
+    try {
+      final remoteDtos = await remoteDataSource.getHistory();
+      
+      await localDataSource.cacheHistory(remoteDtos);
+      
+      return remoteDtos.map((dto) => StudySessionMapper.toEntity(dto)).toList();
+    } catch (e) {
+      // CORREÇÃO: debugPrint em vez de print
+      debugPrint("Sem internet? Carregando do cache local...");
+      final localDtos = await localDataSource.getLastHistory();
+      return localDtos.map((dto) => StudySessionMapper.toEntity(dto)).toList();
+    }
   }
   
   @override
   Future<int> getTodayStudyMinutes() async {
-    // 1. Busca todo o histórico
     final history = await getSessionHistory();
     final now = DateTime.now();
     
-    // 2. Filtra apenas sessões de HOJE e do tipo FOCUS
     final todaySessions = history.where((s) {
       return s.date.year == now.year &&
              s.date.month == now.month &&
@@ -34,8 +49,6 @@ class StudyRepositoryImpl implements StudyRepository {
              s.type == 'FOCUS';
     });
 
-    // 3. Soma os minutos (CORREÇÃO AQUI: adicionamos <int> e tipamos o sum)
-    // O erro acontecia porque o Dart se perdia no tipo da variável 'sum'
     return todaySessions.fold<int>(0, (int sum, StudySession item) {
       return sum + item.durationMinutes;
     });

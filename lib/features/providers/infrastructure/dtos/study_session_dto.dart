@@ -11,21 +11,25 @@ class StudySessionDto {
     required this.type,
   });
 
+  // Lê do banco (criado_em) -> Transforma em (date)
   factory StudySessionDto.fromMap(Map<String, dynamic> map) {
     return StudySessionDto(
       id: map['id']?.toString() ?? '',
-      date: map['created_at'] ?? '',
-      durationMinutes: map['duration'] ?? 0,
-      type: map['type'] ?? 'FOCUS',
+      // CORREÇÃO: Usando o nome que está na sua imagem do banco
+      date: map['criado_em'] ?? '', 
+      durationMinutes: map['duracao'] ?? 0, 
+      type: map['tipo'] ?? 'FOCUS',
     );
   }
 
+  // Pega do App (date) -> Transforma para o banco (criado_em)
   Map<String, dynamic> toMap() {
     return {
-      'duration': durationMinutes,
-      'type': type,
-      // O Supabase gera ID e Date automaticamente na criação, 
-      // mas enviamos se for atualização
+      'id': id, 
+      // CORREÇÃO: Usando o nome 'criado_em'
+      'criado_em': date, 
+      'duracao': durationMinutes,
+      'tipo': type,
     };
   }
 }

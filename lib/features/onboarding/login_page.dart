@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
+// <--- CORREÇÃO: Import necessário para debugPrint
 import 'package:supabase_flutter/supabase_flutter.dart';
-// Ajuste o import abaixo se o caminho para o seu student_health_app.dart for diferente
-import 'package:projeto_final_coimbra/features/app/student_health_app.dart'; 
 import '../home/home_page.dart';
-// O import do splashscreen não é estritamente necessário aqui, mas se estiver usando, mantenha.
-import '../splashscreen/splashscreen_page.dart'; 
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,40 +16,35 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   
   bool _isLoading = false;
-  bool _isLoginMode = true; // true = Tela de Login, false = Tela de Cadastro
+  bool _isLoginMode = true; 
 
-  // --- LÓGICA DE LOGIN (Entrar) ---
   Future<void> _signIn() async {
     setState(() => _isLoading = true);
     try {
-      // 1. Autentica no sistema (Auth)
       final authResponse = await Supabase.instance.client.auth.signInWithPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      // 2. Verifica se o usuário existe na SUA tabela personalizada
       if (authResponse.user != null) {
-        // CORREÇÃO AQUI: Mudamos de 'estudantes' para 'usuario'
         final data = await Supabase.instance.client
             .from('usuario') 
             .select()
-            // Buscamos pelo UID que é o link com o login
             .eq('uid', authResponse.user!.id)
             .maybeSingle();
 
         if (data == null) {
-          // Usuário logou no Auth, mas não tem dados na tabela 'usuario'
-          print("Aviso: Usuário sem dados na tabela 'usuario'.");
+          // CORREÇÃO: debugPrint em vez de print
+          debugPrint("Aviso: Usuário sem dados na tabela 'usuario'.");
         } else {
-          print("Login realizado. Nome na tabela: ${data['nome']}");
+          // CORREÇÃO: debugPrint em vez de print
+          debugPrint("Login realizado. Nome na tabela: ${data['nome']}");
         }
         
         if (mounted) {
-          // Redireciona para a Home
           Navigator.of(context).pushAndRemoveUntil(
              MaterialPageRoute(builder: (_) => const HomePage()),
-             (route) => false, // Remove as telas anteriores do histórico
+             (route) => false, 
           );
         }
       }
@@ -65,9 +57,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // --- LÓGICA DE CADASTRO (Criar Conta) ---
   Future<void> _signUp() async {
-    // Validação básica dos campos
     if (_nameController.text.isEmpty || _emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Preencha todos os campos!')));
       return;
@@ -75,7 +65,6 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => _isLoading = true);
     try {
-      // 1. Cria o login no sistema de Autenticação (Auth)
       final authResponse = await Supabase.instance.client.auth.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
@@ -83,16 +72,12 @@ class _LoginPageState extends State<LoginPage> {
 
       final user = authResponse.user;
 
-      // 2. SALVA OS DADOS NA SUA TABELA 'usuario'
       if (user != null) {
-        // CORREÇÃO AQUI: Mudamos de 'estudantes' para 'usuario'
         await Supabase.instance.client.from('usuario').insert({
-          // Usamos o ID do Auth como 'uid' para vincular
           'uid': user.id, 
           'email': _emailController.text.trim(),
           'senha': _passwordController.text.trim(),
           'nome': _nameController.text.trim(),
-          // Agora que mudamos para int8 no banco, o 0 vai funcionar
           'tempo_de_exercicio': 0,
           'tempo_de_estudo': 0,
         });
@@ -101,7 +86,6 @@ class _LoginPageState extends State<LoginPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Conta criada com sucesso! Faça login.')),
           );
-          // Volta para a tela de login e limpa os campos
           setState(() {
             _isLoginMode = true;
             _passwordController.clear();
@@ -112,9 +96,9 @@ class _LoginPageState extends State<LoginPage> {
     } on AuthException catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Erro de Cadastro: ${e.message}")));
     } catch (e) {
-      // Esse catch vai pegar o erro se os tipos das colunas no banco ainda estiverem errados
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro ao salvar na tabela: $e')));
-      print("Erro detalhado do cadastro: $e");
+      // CORREÇÃO: debugPrint em vez de print
+      debugPrint("Erro detalhado do cadastro: $e");
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -133,7 +117,6 @@ class _LoginPageState extends State<LoginPage> {
               const Icon(Icons.school, size: 80, color: Colors.blue),
               const SizedBox(height: 20),
               
-              // Campo de Nome (Só aparece se estiver criando conta)
               if (!_isLoginMode) ...[
                 TextField(
                   controller: _nameController,

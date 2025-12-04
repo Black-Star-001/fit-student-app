@@ -9,35 +9,31 @@ class TermsPage extends StatefulWidget {
 }
 
 class _TermsPageState extends State<TermsPage> {
-  // Controlador para monitorar a rolagem
   final ScrollController _scrollController = ScrollController();
 
-  bool _agreedToTerms = false;      // Se marcou a caixinha
-  bool _hasReadToBottom = false;    // Se rolou até o fim
+  bool _agreedToTerms = false;      
+  bool _hasReadToBottom = false;    
 
   @override
   void initState() {
     super.initState();
-    // Adiciona o ouvinte: toda vez que rolar, ele executa essa função
     _scrollController.addListener(_scrollListener);
   }
 
   @override
   void dispose() {
-    // Sempre precisamos descartar o controller para não gastar memória
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     super.dispose();
   }
 
   void _scrollListener() {
-    // Verifica se chegou no final (com uma tolerância de 50 pixels para garantir)
     if (_scrollController.offset >= _scrollController.position.maxScrollExtent - 50 &&
         !_scrollController.position.outOfRange) {
       
       if (!_hasReadToBottom) {
         setState(() {
-          _hasReadToBottom = true; // Libera o checkbox!
+          _hasReadToBottom = true; 
         });
       }
     }
@@ -82,7 +78,6 @@ Ao clicar em "Concordo e Continuar", você declara que leu, compreendeu e aceita
       ),
       body: Column(
         children: [
-          // 1. Área de Texto com Rolagem
           Expanded(
             child: Container(
               margin: const EdgeInsets.all(16),
@@ -94,9 +89,9 @@ Ao clicar em "Concordo e Continuar", você declara que leu, compreendeu e aceita
               ),
               child: Scrollbar(
                 thumbVisibility: true,
-                controller: _scrollController, // Vincula o scrollbar ao controller
+                controller: _scrollController, 
                 child: SingleChildScrollView(
-                  controller: _scrollController, // Vincula a lista ao controller (CRUCIAL)
+                  controller: _scrollController, 
                   child: Text(
                     _termsText,
                     style: const TextStyle(fontSize: 16, height: 1.5),
@@ -107,14 +102,14 @@ Ao clicar em "Concordo e Continuar", você declara que leu, compreendeu e aceita
             ),
           ),
 
-          // 2. Área de Aceite (Checkbox + Botão)
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  // CORREÇÃO: Uso de .withValues(alpha: ...) ao invés de .withOpacity
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -5),
                 )
@@ -122,9 +117,7 @@ Ao clicar em "Concordo e Continuar", você declara que leu, compreendeu e aceita
             ),
             child: Column(
               children: [
-                // Checkbox para concordar
                 CheckboxListTile(
-                  // Só permite marcar se _hasReadToBottom for verdadeiro
                   enabled: _hasReadToBottom, 
                   value: _agreedToTerms,
                   onChanged: _hasReadToBottom 
@@ -133,13 +126,12 @@ Ao clicar em "Concordo e Continuar", você declara que leu, compreendeu e aceita
                             _agreedToTerms = value ?? false;
                           });
                         }
-                      : null, // Se não leu, o clique é nulo (bloqueado)
+                      : null, 
                   
                   title: Text(
                     "Li e concordo com os Termos de Uso e Política de Privacidade.",
                     style: TextStyle(
                       fontSize: 14,
-                      // Deixa o texto cinza se estiver bloqueado
                       color: _hasReadToBottom ? Colors.black : Colors.grey,
                     ),
                   ),
@@ -155,12 +147,10 @@ Ao clicar em "Concordo e Continuar", você declara que leu, compreendeu e aceita
                 
                 const SizedBox(height: 16),
 
-                // Botão Continuar
                 SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    // Só habilita o botão se leu tudo E marcou o checkbox
                     onPressed: (_hasReadToBottom && _agreedToTerms)
                         ? () {
                             Navigator.pushReplacement(
