@@ -15,7 +15,7 @@ class StudySessionDto {
   factory StudySessionDto.fromMap(Map<String, dynamic> map) {
     return StudySessionDto(
       id: map['id']?.toString() ?? '',
-      // CORREÇÃO: Usando o nome que está na sua imagem do banco
+      // CORREÇÃO: Usando o nome correto da coluna do banco
       date: map['criado_em'] ?? '', 
       durationMinutes: map['duracao'] ?? 0, 
       type: map['tipo'] ?? 'FOCUS',
@@ -26,7 +26,7 @@ class StudySessionDto {
   Map<String, dynamic> toMap() {
     return {
       'id': id, 
-      // CORREÇÃO: Usando o nome 'criado_em'
+      // CORREÇÃO: Usando o nome correto
       'criado_em': date, 
       'duracao': durationMinutes,
       'tipo': type,
