@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'profile_page.dart';
-// Import da tela de histórico
 import '../providers/presentation/study_history_page.dart';
-// Import do Menu Lateral (Drawer) que acabamos de criar
 import 'widgets/home_drawer.dart';
+
+// Import dos novos widgets
+import '../hydration/presentation/widgets/hydration_card.dart';
+import '../exercises/presentation/pages/exercises_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,34 +21,33 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text('FitStudent'),
         centerTitle: true,
-        // O Drawer adiciona automaticamente o ícone de menu na esquerda.
-        // Se quiser manter o ícone de perfil na direita como atalho rápido, pode deixar:
         actions: [
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () {
-              Navigator.push(
-                context, 
-                MaterialPageRoute(builder: (_) => const ProfilePage())
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfilePage()));
             },
           )
         ],
       ),
       
-      // --- AQUI ESTÁ A MUDANÇA PRINCIPAL ---
-      drawer: const HomeDrawer(), 
-      // -------------------------------------
+      drawer: const HomeDrawer(),
 
-      body: Padding(
+      body: SingleChildScrollView( // Adicionado scroll para caber tudo
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Card Principal - Timer de Estudo (Exemplo visual)
+            // 1. Card de Hidratação (NOVO)
+            const HydrationCard(),
+            
+            const SizedBox(height: 20),
+
+            // 2. Card Principal - Timer
             Card(
               color: Colors.blue,
               elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               child: Padding(
                 padding: const EdgeInsets.all(32.0),
                 child: Column(
@@ -65,37 +66,41 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
+            
             const SizedBox(height: 20),
             
-            // Botão para ver o Histórico
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const StudyHistoryPage())
-                );
-              },
-              icon: const Icon(Icons.history),
-              label: const Text('Ver Histórico de Estudos'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.all(20),
-              ),
-            ),
-            
-            const SizedBox(height: 12),
-            
-            // Botão para ver Exercícios (Placeholder)
-            OutlinedButton.icon(
-              onPressed: () {
-                 ScaffoldMessenger.of(context).showSnackBar(
-                   const SnackBar(content: Text('Funcionalidade de exercícios em breve!'))
-                 );
-              },
-              icon: const Icon(Icons.accessibility_new),
-              label: const Text('Alongamentos Rápidos'),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.all(20),
-              ),
+            // 3. Botões de Ação
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const StudyHistoryPage()));
+                    },
+                    icon: const Icon(Icons.history),
+                    label: const Text('Histórico'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      // Navega para a tela de Exercícios (NOVO)
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const ExercisesPage()));
+                    },
+                    icon: const Icon(Icons.accessibility_new),
+                    label: const Text('Exercícios'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green.shade50,
+                      foregroundColor: Colors.green.shade800,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
