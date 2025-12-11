@@ -3,9 +3,10 @@ import 'profile_page.dart';
 import '../providers/presentation/study_history_page.dart';
 import 'widgets/home_drawer.dart';
 
-// Import dos novos widgets
+// --- IMPORTS DAS FUNCIONALIDADES ---
 import '../hydration/presentation/widgets/hydration_card.dart';
 import '../exercises/presentation/pages/exercises_page.dart';
+import '../goals/presentation/widgets/daily_goal_card.dart'; // <--- 1. IMPORT NOVO
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -33,17 +34,22 @@ class _HomePageState extends State<HomePage> {
       
       drawer: const HomeDrawer(),
 
-      body: SingleChildScrollView( // Adicionado scroll para caber tudo
+      body: SingleChildScrollView( 
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 1. Card de Hidratação (NOVO)
+            // 1. Card de Hidratação
             const HydrationCard(),
             
+            const SizedBox(height: 12),
+
+            // 2. Card de Meta Diária (NOVO) <--- 2. ADICIONADO AQUI
+            const DailyGoalCard(),
+
             const SizedBox(height: 20),
 
-            // 2. Card Principal - Timer
+            // 3. Card Principal - Timer (Decorativo por enquanto)
             Card(
               color: Colors.blue,
               elevation: 4,
@@ -69,7 +75,7 @@ class _HomePageState extends State<HomePage> {
             
             const SizedBox(height: 20),
             
-            // 3. Botões de Ação
+            // 4. Botões de Ação (Histórico e Exercícios)
             Row(
               children: [
                 Expanded(
@@ -88,7 +94,6 @@ class _HomePageState extends State<HomePage> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      // Navega para a tela de Exercícios (NOVO)
                       Navigator.push(context, MaterialPageRoute(builder: (_) => const ExercisesPage()));
                     },
                     icon: const Icon(Icons.accessibility_new),

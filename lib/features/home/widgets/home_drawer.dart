@@ -9,6 +9,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../onboarding/login_page.dart';
 
+// O Import já estava aqui, perfeito!
+import '../../achievements/presentation/pages/achievements_page.dart';
+
 class HomeDrawer extends StatefulWidget {
   const HomeDrawer({super.key});
 
@@ -52,7 +55,6 @@ class _HomeDrawerState extends State<HomeDrawer> {
     final prefs = await SharedPreferences.getInstance();
     final savedPath = prefs.getString('profile_image_path');
     
-    // Verificação extra: só carrega se o arquivo realmente existir no disco
     if (savedPath != null && await File(savedPath).exists()) {
       setState(() {
         _imagePath = savedPath;
@@ -69,7 +71,6 @@ class _HomeDrawerState extends State<HomeDrawer> {
       final dir = await getApplicationDocumentsDirectory();
       final targetPath = '${dir.path}/profile_compressed.jpg';
 
-      // Se já existir um arquivo anterior, deleta para evitar conflito
       if (await File(targetPath).exists()) {
         await File(targetPath).delete();
       }
@@ -134,7 +135,6 @@ class _HomeDrawerState extends State<HomeDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    // Verifica se a imagem existe antes de tentar mostrar
     final bool hasValidImage = _imagePath != null && File(_imagePath!).existsSync();
 
     return Drawer(
@@ -195,8 +195,18 @@ class _HomeDrawerState extends State<HomeDrawer> {
                // Navegação futura
             },
           ),
-          
-          // BOTÃO DO TEMA ESCURO
+
+          // --- 🏆 ADICIONEI O BOTÃO DE CONQUISTAS AQUI ---
+          ListTile(
+            leading: const Icon(Icons.emoji_events, color: Colors.amber),
+            title: const Text('Conquistas'),
+            onTap: () {
+              Navigator.pop(context); // Fecha o drawer
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AchievementsPage()));
+            },
+          ),
+          // -----------------------------------------------
+
           Consumer<ThemeProvider>(
             builder: (context, themeProvider, _) {
               return SwitchListTile(
@@ -217,7 +227,6 @@ class _HomeDrawerState extends State<HomeDrawer> {
             onTap: () async {
                await Supabase.instance.client.auth.signOut();
                
-               // CORREÇÃO: Verifica se o contexto ainda é válido antes de navegar
                if (!context.mounted) return;
 
                Navigator.pushAndRemoveUntil(

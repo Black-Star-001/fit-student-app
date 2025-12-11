@@ -14,8 +14,8 @@ class StudyHistoryPage extends StatefulWidget {
 }
 
 class _StudyHistoryPageState extends State<StudyHistoryPage> {
-  late List<StudySession> _sessions = [];
-  bool _isLoading = false;
+  List<StudySession> _sessions = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -23,69 +23,82 @@ class _StudyHistoryPageState extends State<StudyHistoryPage> {
     _loadSessions();
   }
 
+  // Essa função busca os dados (Local + Remoto)
   Future<void> _loadSessions() async {
-    setState(() => _isLoading = true);
     try {
       final repository = context.read<StudyRepository>();
       final sessions = await repository.getSessionHistory();
-      setState(() {
-        _sessions = sessions;
-      });
-    } catch (e) {
-      debugPrint('Erro ao carregar sessões: $e');
+      
       if (mounted) {
+        setState(() {
+          _sessions = sessions;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao carregar histórico: $e')),
+          SnackBar(content: Text('Erro ao atualizar: $e')),
         );
       }
-    } finally {
-      setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _addNewSession(int minutes) async {
+    setState(() => _isLoading = true);
+    
+    final newSession = StudySession(
+      id: '', 
+      date: DateTime.now(),
+      durationMinutes: minutes,
+      type: 'FOCUS',
+    );
+
+    final repository = context.read<StudyRepository>();
+    await repository.saveSession(newSession);
+
+    await _loadSessions();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Histórico de Estudos')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SessionListView(sessions: _sessions),
+      
+      // AQUI ESTÁ A MÁGICA DO REFRESH
+      // O RefreshIndicator envolve o conteúdo da tela
+      body: RefreshIndicator(
+        // Quando arrastar, ele chama _loadSessions de novo
+        onRefresh: _loadSessions, 
+        color: Colors.white,
+        backgroundColor: Colors.blue,
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _sessions.isEmpty
+                // Dica: ListView vazio precisa disso para o scroll funcionar e o refresh ativar
+                ? ListView(
+                    children: const [
+                      SizedBox(height: 200),
+                      Center(child: Text("Nenhum estudo registrado ainda."))
+                    ],
+                  )
+                : SessionListView(sessions: _sessions),
+      ),
+      
       floatingActionButton: StudyFabArea(
         onPressed: () async {
-          // Abre o formulário
           final result = await showDialog<int>(
             context: context,
             builder: (_) => const SessionFormDialog(),
           );
           
           if (result != null && result > 0) {
-            // Salva no repositório (que sincroniza com Supabase e cache)
-            try {
-              final repository = context.read<StudyRepository>();
-              final newSession = StudySession(
-                id: DateTime.now().toString(),
-                date: DateTime.now(),
-                durationMinutes: result,
-                type: 'FOCUS'
+            await _addNewSession(result);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Sessão salva com sucesso!')),
               );
-              
-              await repository.saveSession(newSession);
-              
-              // Recarrega o histórico para garantir sincronização
-              await _loadSessions();
-              
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Sessão salva com sucesso!')),
-                );
-              }
-            } catch (e) {
-              debugPrint('Erro ao salvar sessão: $e');
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Erro ao salvar: $e')),
-                );
-              }
             }
           }
         },

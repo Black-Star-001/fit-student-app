@@ -1,84 +1,133 @@
-# FitStudent
+FitStudent
 
 Um aplicativo desenvolvido em Flutter para ajudar estudantes a combater o sedentarismo, combinando rotina de estudos com pausas ativas e exercícios de alongamento.
 
-## Características
+Características
 
-- 🎨 Interface limpa e intuitiva
-- 🔐 Autenticação segura e cadastro via **Supabase**
-- 📜 Termos de Uso com verificação de leitura obrigatória
-- ⏱️ Monitoramento de tempo de estudo e exercício (em breve)
-- 🧘 Sugestões de alongamentos para pausas (em breve)
-- ☁️ Sincronização de dados na nuvem
+🎨 Interface limpa e intuitiva
 
-## Paleta de Cores
+🔐 Autenticação segura e cadastro via Supabase
 
-- **Primary Blue**: `Colors.blue` (Cor principal do app)
-- **Background**: `#FFFFFF` (Fundo claro)
+📜 Termos de Uso com verificação de leitura obrigatória e scroll
 
-## Pré-requisitos
+🖼️ Avatar de perfil com foto (Câmera/Galeria) e persistência local
+
+🌗 Tema Escuro (Dark Mode) com persistência de preferência
+
+⏱️ Histórico de Estudos sincronizado (Local + Nuvem)
+
+💧 Controle de Hidratação
+
+🧘 Catálogo de Exercícios de Alongamento
+
+🎯 Metas Diárias de Estudo
+
+🏆 Sistema de Conquistas (Gamificação)
+
+Paleta de Cores
+
+Primary Blue: Colors.blue (Cor principal do app)
+
+Background Light: #FFFFFF (Fundo claro)
+
+Background Dark: #121212 (Fundo escuro)
+
+Pré-requisitos
 
 Para rodar este projeto, você precisará de:
 
-- Flutter SDK instalado
-- Conta no Supabase (para o backend)
-- Arquivo de configuração de variáveis de ambiente (`.env`)
+Flutter SDK instalado
 
-## Como Executar
+Conta no Supabase (para o backend)
 
-1. Clone este repositório:
-```bash
-git clone [https://github.com/SEU_USUARIO/fit-student-app.git](https://github.com/SEU_USUARIO/fit-student-app.git)
+Arquivo de configuração de variáveis de ambiente (.env)
 
-2. Navegue até o diretório do projeto
+Como Executar
 
-3. Execute os seguintes comandos: 
+Clone este repositório:
 
--cd fit-student-app
--flutter pub get
--flutter run 
+git clone [https://github.com/Black-Star-001/fit-student-app.git](https://github.com/Black-Star-001/fit-student-app.git)
 
-## Supabase
 
-SUPABASE_URL=sua_url_do_supabase_aqui
+Navegue até o diretório do projeto:
+
+cd fit-student-app
+
+
+Instale as dependências:
+
+flutter pub get
+
+
+Configuração do Ambiente (Importante):
+Crie um arquivo chamado .env na raiz do projeto e adicione suas chaves:
+
+SUPABASE_URL=sua_url_aqui
 SUPABASE_ANON_KEY=sua_chave_anonima_aqui
 
 
-## Estrutura do Projeto
+Execute o aplicativo:
+
+flutter run
+
+
+Estrutura do Projeto
+
+O projeto segue estritamente a Clean Architecture, organizando o código por features (funcionalidades) e camadas (Domain, Infrastructure, Presentation).
 
 lib/
 ├── features/
-│   ├── app/                 # Configuração global (MaterialApp, Providers)
-│   ├── home/                # Tela Principal e Perfil
+│   ├── achievements/        # 🏆 Gamificação (Conquistas)
+│   │   ├── domain/          # Entidade Achievement
+│   │   ├── infrastructure/  # Conexão com tabela 'conquista'
+│   │   └── presentation/    # Tela de lista de medalhas
+│   ├── app/                 # Configuração global (MaterialApp, MultiProvider)
+│   ├── exercises/           # 🧘 Catálogo de Exercícios
+│   │   ├── domain/          # Entidade Exercise
+│   │   ├── infrastructure/  # Conexão com tabela 'exercicio'
+│   │   └── presentation/    # Tela de lista de alongamentos
+│   ├── goals/               # 🎯 Metas Diárias
+│   │   ├── domain/          # Entidade DailyGoal
+│   │   ├── infrastructure/  # Conexão com tabela 'meta_diaria'
+│   │   └── presentation/    # Widget de Card de Meta na Home
+│   ├── home/                # Tela Principal, Drawer (Avatar) e Perfil
+│   ├── hydration/           # 💧 Controle de Hidratação
+│   │   ├── domain/          # Entidade Hydration
+│   │   ├── infrastructure/  # Conexão com tabela 'hidratacao'
+│   │   └── presentation/    # Widget de Card de Água na Home
+│   ├── models/              # Modelos auxiliares (Consentimento, etc)
 │   ├── onboarding/          # Telas de Login, Cadastro e Termos de Uso
-│   ├── providers/           # Gerenciamento de Estado e Lógica de Histórico
-│   │   ├── domain/          # Regras de Negócio (Entidades)
-│   │   ├── infrastructure/  # Conexão com Banco (DTOs, Remote Data Source)
-│   │   └── presentation/    # Widgets visuais do histórico
+│   ├── providers/           # ⏱️ Histórico de Estudos (Feature Base)
+│   │   ├── domain/          # Regras de Negócio (StudySession)
+│   │   ├── infrastructure/  # Repositório com Cache Local + Remoto
+│   │   └── presentation/    # Tela de Histórico e Lógica de UI
 │   └── splashscreen/        # Tela de carregamento inicial
-├── services/
-│   ├── env_service.dart     # Carregamento de variáveis de ambiente
-│   └── supabase_service.dart# Inicialização do Supabase
-└── main.dart                # Ponto de entrada
+├── services/                # Serviços de Terceiros
+│   ├── auth_repository.dart # Autenticação
+│   ├── env_service.dart     # Variáveis de ambiente
+│   ├── supabase_service.dart# Cliente Supabase
+│   └── ...                  # Serviços de Storage Local
+├── theme/                   # 🌗 Configuração de Tema
+│   ├── app_theme.dart       # Definição de Cores (Light/Dark)
+│   └── theme_provider.dart  # Lógica de troca de tema
+├── main.dart                # Ponto de entrada da aplicação
+└── test_exercise.dart       # 🧪 Script de Teste de Arquitetura (4 Entidades)
 
-## Tecnologias Utilizadas
 
-Flutter & Dart: Desenvolvimento Mobile
+Banco de Dados (Supabase)
 
-Supabase: Backend as a Service (Auth e Database)
+O projeto utiliza as seguintes tabelas no PostgreSQL:
 
-Provider: Gerenciamento de Estado e Injeção de Dependência
+usuario: Dados do perfil (vínculo com Auth).
 
-Flutter Dotenv: Gerenciamento de variáveis de ambiente
+sessao_estudo: Histórico de tempo focado.
 
-## Próximos Passos
+exercicio: Catálogo de alongamentos disponíveis.
 
-[ ] Implementar o Timer Pomodoro na Home
+meta_diaria: Registro de metas e progresso diário.
 
-[ ] Criar a lista de exercícios de alongamento
+conquista: Medalhas desbloqueadas pelo usuário.
 
-[ ] Conectar o histórico visual com o banco de dados
+hidratacao: Registro de consumo de água.
 
-[ ] Adicionar gráficos de desempenho no Perfil
-
-Desenvolvido por Guilherme Henrique da Silva
+Desenvolvido por Guilherme 
